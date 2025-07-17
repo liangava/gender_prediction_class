@@ -1,15 +1,14 @@
 import streamlit as st
 import nltk
-from nltk import NaiveBayesClassifier
 from joblib import load
 
-# Download NLTK resources if not already downloaded
+# Download NLTK names corpus
 nltk.download('names')
 
-# Function to extract features from a name
+# Extract name features
 def extract_gender_features(name):
     name = name.lower()
-    features = {
+    return {
         "suffix": name[-1:],
         "suffix2": name[-2:] if len(name) > 1 else name[0],
         "suffix3": name[-3:] if len(name) > 2 else name[0],
@@ -22,99 +21,116 @@ def extract_gender_features(name):
         "prefix4": name[:4] if len(name) > 3 else name[0],
         "prefix5": name[:5] if len(name) > 4 else name[0]
     }
-    return features
 
-# Load the trained classifier
+# Load model
 bayes = load('gender_prediction.joblib')
 
-# Inject custom CSS for KAW KAW style
-def load_custom_css():
+# 🔥 KAW KAW CSS 🔥
+def kaw_kaw_css():
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Press+Start+2P&display=swap');
 
-    html, body, [class*="css"]  {
-        font-family: 'Poppins', sans-serif;
-        background: linear-gradient(to right, #141e30, #243b55);
-        color: #f5f5f5;
+    html, body, [class*="css"] {
+        font-family: 'Orbitron', sans-serif;
+        background: linear-gradient(270deg, #0f0c29, #302b63, #24243e);
+        background-size: 600% 600%;
+        animation: gradientBG 10s ease infinite;
+        color: #ffffff;
+    }
+
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
 
     .main {
         display: flex;
-        flex-direction: column;
-        align-items: center;
         justify-content: center;
+        align-items: center;
+        text-align: center;
     }
 
     .stTextInput > div > input {
-        background-color: #1e1e2f;
-        color: white;
-        border: 1px solid #00ffd5;
+        background-color: rgba(255, 255, 255, 0.1);
+        border: 2px solid #00f0ff;
         border-radius: 10px;
-        padding: 10px;
+        color: #fff;
+        font-size: 1.2rem;
+        padding: 12px;
     }
 
     .stButton > button {
-        background-color: #00ffd5;
-        color: black;
-        border-radius: 10px;
-        font-weight: bold;
-        transition: 0.3s ease;
+        background: linear-gradient(45deg, #ff00cc, #3333ff);
+        color: #fff;
+        border: none;
+        border-radius: 30px;
         padding: 0.75rem 1.5rem;
+        font-size: 1.1rem;
+        font-weight: bold;
+        box-shadow: 0 0 15px #ff00cc;
+        transition: 0.3s ease;
+        font-family: 'Press Start 2P', cursive;
     }
 
     .stButton > button:hover {
-        background-color: #0ff;
-        box-shadow: 0 0 20px #00ffd5;
-        transform: scale(1.05);
+        background: linear-gradient(45deg, #00ffff, #ff00cc);
+        box-shadow: 0 0 25px #00ffff;
+        transform: scale(1.08);
+        cursor: pointer;
     }
 
     .stMarkdown h1 {
         font-size: 3rem;
-        background: -webkit-linear-gradient(45deg, #00ffd5, #ff00c8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: glow 1.5s ease-in-out infinite alternate;
+        color: #00ffff;
+        text-shadow: 0 0 15px #00ffff, 0 0 30px #ff00ff;
         text-align: center;
+        margin-bottom: 2rem;
+        animation: pulseGlow 2s infinite;
     }
 
-    @keyframes glow {
-        from {
-            text-shadow: 0 0 10px #00ffd5;
-        }
-        to {
-            text-shadow: 0 0 20px #ff00c8;
-        }
+    @keyframes pulseGlow {
+        0% { text-shadow: 0 0 10px #00ffff; }
+        50% { text-shadow: 0 0 20px #ff00ff; }
+        100% { text-shadow: 0 0 10px #00ffff; }
     }
 
     .stSuccess {
-        font-size: 1.25rem;
-        background-color: rgba(0, 255, 213, 0.1);
-        padding: 1rem;
+        background-color: rgba(0, 255, 204, 0.1);
+        border-left: 5px solid #00ffd5;
+        font-size: 1.3rem;
+        padding: 1.5rem;
         border-radius: 12px;
-        margin-top: 20px;
+        box-shadow: 0 0 20px #00ffd5;
         text-align: center;
-        color: #ffffff;
     }
+
+    .stWarning {
+        font-size: 1.2rem;
+        color: #ffaaaa;
+    }
+
     </style>
     """, unsafe_allow_html=True)
 
-# Streamlit App
+# 💥 THE APP
 def main():
-    load_custom_css()
+    kaw_kaw_css()
 
-    st.markdown("<h1>Gender Prediction App 🚻</h1>", unsafe_allow_html=True)
-    st.write('✨ Type a name below and let the AI predict whether it sounds more masculine or feminine!')
+    st.markdown("<h1>⚡ KAW KAW Gender Predictor ⚡</h1>", unsafe_allow_html=True)
+    st.write("🔥 Enter a name and witness the neon-powered AI magic.")
 
-    input_name = st.text_input('Enter a name:', max_chars=30)
+    input_name = st.text_input("🔤 Your Epic Name:", max_chars=30)
 
-    if st.button('🎯 Predict Gender'):
-        if input_name.strip() != '':
+    if st.button("🚀 Predict Now"):
+        if input_name.strip() != "":
             features = extract_gender_features(input_name)
-            predicted_gender = bayes.classify(features)
-            st.success(f'The predicted gender for **"{input_name}"** is: 🧠 **{predicted_gender.upper()}**')
+            result = bayes.classify(features)
+            emoji = "👦" if result == "male" else "👧"
+            st.success(f'🔮 Predicted Gender for **"{input_name}"**: {emoji} **{result.upper()}**')
         else:
-            st.warning('⚠️ Please enter a name.')
+            st.warning("⚠️ Input cannot be empty. Type something legendary.")
 
 if __name__ == '__main__':
     main()
