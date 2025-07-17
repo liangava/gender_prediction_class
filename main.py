@@ -1,7 +1,6 @@
 import streamlit as st
 import nltk
 from nltk import NaiveBayesClassifier
-from nltk.classify import apply_features
 from joblib import load
 
 # Download NLTK resources if not already downloaded
@@ -25,29 +24,97 @@ def extract_gender_features(name):
     }
     return features
 
-# Load the trained Naive Bayes classifier
+# Load the trained classifier
 bayes = load('gender_prediction.joblib')
 
-# Streamlit app
-def main():
-    st.title('Gender Prediction App')
-    st.write('Enter a name to predict its gender.')
+# Inject custom CSS for KAW KAW style
+def load_custom_css():
+    st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
 
-    # Input for name
-    input_name = st.text_input('Name:')
-    
-    if st.button('Predict'):
+    html, body, [class*="css"]  {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(to right, #141e30, #243b55);
+        color: #f5f5f5;
+    }
+
+    .main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stTextInput > div > input {
+        background-color: #1e1e2f;
+        color: white;
+        border: 1px solid #00ffd5;
+        border-radius: 10px;
+        padding: 10px;
+    }
+
+    .stButton > button {
+        background-color: #00ffd5;
+        color: black;
+        border-radius: 10px;
+        font-weight: bold;
+        transition: 0.3s ease;
+        padding: 0.75rem 1.5rem;
+    }
+
+    .stButton > button:hover {
+        background-color: #0ff;
+        box-shadow: 0 0 20px #00ffd5;
+        transform: scale(1.05);
+    }
+
+    .stMarkdown h1 {
+        font-size: 3rem;
+        background: -webkit-linear-gradient(45deg, #00ffd5, #ff00c8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: glow 1.5s ease-in-out infinite alternate;
+        text-align: center;
+    }
+
+    @keyframes glow {
+        from {
+            text-shadow: 0 0 10px #00ffd5;
+        }
+        to {
+            text-shadow: 0 0 20px #ff00c8;
+        }
+    }
+
+    .stSuccess {
+        font-size: 1.25rem;
+        background-color: rgba(0, 255, 213, 0.1);
+        padding: 1rem;
+        border-radius: 12px;
+        margin-top: 20px;
+        text-align: center;
+        color: #ffffff;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# Streamlit App
+def main():
+    load_custom_css()
+
+    st.markdown("<h1>Gender Prediction App 🚻</h1>", unsafe_allow_html=True)
+    st.write('✨ Type a name below and let the AI predict whether it sounds more masculine or feminine!')
+
+    input_name = st.text_input('Enter a name:', max_chars=30)
+
+    if st.button('🎯 Predict Gender'):
         if input_name.strip() != '':
-            # Extract features for the input name
             features = extract_gender_features(input_name)
-            
-            # Predict using the trained classifier
             predicted_gender = bayes.classify(features)
-            
-            # Display prediction
-            st.success(f'The predicted gender for "{input_name}" is: {predicted_gender}')
+            st.success(f'The predicted gender for **"{input_name}"** is: 🧠 **{predicted_gender.upper()}**')
         else:
-            st.warning('Please enter a name.')
+            st.warning('⚠️ Please enter a name.')
 
 if __name__ == '__main__':
     main()
