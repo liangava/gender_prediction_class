@@ -2,10 +2,8 @@ import streamlit as st
 import nltk
 from joblib import load
 
-# Download NLTK names corpus
 nltk.download('names')
 
-# Extract name features
 def extract_gender_features(name):
     name = name.lower()
     return {
@@ -22,115 +20,184 @@ def extract_gender_features(name):
         "prefix5": name[:5] if len(name) > 4 else name[0]
     }
 
-# Load model
 bayes = load('gender_prediction.joblib')
 
-# 🔥 KAW KAW CSS 🔥
-def kaw_kaw_css():
+def load_kaw_kaw_css():
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Press+Start+2P&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
 
-    html, body, [class*="css"] {
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: black;
+        overflow: hidden;
         font-family: 'Orbitron', sans-serif;
-        background: linear-gradient(270deg, #0f0c29, #302b63, #24243e);
-        background-size: 600% 600%;
-        animation: gradientBG 10s ease infinite;
-        color: #ffffff;
     }
 
-    @keyframes gradientBG {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
+    canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: -1;
     }
 
-    .main {
+    .main-container {
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
+        min-height: 100vh;
+        padding: 30px;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 0 30px #00ffff66;
+        max-width: 500px;
         text-align: center;
+        animation: fadeIn 2s ease-in-out;
+    }
+
+    h1.glitch {
+        font-size: 3rem;
+        color: #00ffff;
+        text-shadow: 0 0 5px #00ffff, 0 0 10px #ff00ff;
+        animation: glitch 1s infinite;
+    }
+
+    @keyframes glitch {
+        0% { transform: skewX(0deg); }
+        20% { transform: skewX(-10deg); }
+        40% { transform: skewX(10deg); }
+        60% { transform: skewX(-5deg); }
+        80% { transform: skewX(5deg); }
+        100% { transform: skewX(0deg); }
     }
 
     .stTextInput > div > input {
-        background-color: rgba(255, 255, 255, 0.1);
-        border: 2px solid #00f0ff;
+        background-color: #111;
+        color: #00ffff;
+        border: 2px solid #00ffff;
         border-radius: 10px;
-        color: #fff;
-        font-size: 1.2rem;
-        padding: 12px;
+        padding: 10px;
+        font-size: 1rem;
+        margin-bottom: 20px;
     }
 
     .stButton > button {
-        background: linear-gradient(45deg, #ff00cc, #3333ff);
-        color: #fff;
+        background: linear-gradient(45deg, #00ffff, #ff00ff);
         border: none;
-        border-radius: 30px;
-        padding: 0.75rem 1.5rem;
-        font-size: 1.1rem;
+        color: white;
+        border-radius: 10px;
+        padding: 10px 20px;
         font-weight: bold;
-        box-shadow: 0 0 15px #ff00cc;
-        transition: 0.3s ease;
-        font-family: 'Press Start 2P', cursive;
+        box-shadow: 0 0 10px #00ffff;
+        transition: all 0.3s ease;
     }
 
     .stButton > button:hover {
-        background: linear-gradient(45deg, #00ffff, #ff00cc);
-        box-shadow: 0 0 25px #00ffff;
-        transform: scale(1.08);
+        transform: scale(1.1);
+        box-shadow: 0 0 20px #ff00ff;
         cursor: pointer;
     }
 
-    .stMarkdown h1 {
-        font-size: 3rem;
-        color: #00ffff;
-        text-shadow: 0 0 15px #00ffff, 0 0 30px #ff00ff;
-        text-align: center;
-        margin-bottom: 2rem;
-        animation: pulseGlow 2s infinite;
-    }
-
-    @keyframes pulseGlow {
-        0% { text-shadow: 0 0 10px #00ffff; }
-        50% { text-shadow: 0 0 20px #ff00ff; }
-        100% { text-shadow: 0 0 10px #00ffff; }
-    }
-
     .stSuccess {
-        background-color: rgba(0, 255, 204, 0.1);
-        border-left: 5px solid #00ffd5;
+        background-color: rgba(0, 255, 255, 0.1);
+        padding: 1rem;
+        border-radius: 10px;
+        border-left: 5px solid #00ffff;
+        margin-top: 20px;
         font-size: 1.3rem;
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 0 20px #00ffd5;
-        text-align: center;
     }
 
-    .stWarning {
-        font-size: 1.2rem;
-        color: #ffaaaa;
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
-
     </style>
+
+    <canvas id="stars"></canvas>
+    <script>
+    const canvas = document.getElementById('stars');
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+    let w, h;
+
+    function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+    }
+
+    function initStars() {
+        stars = [];
+        for (let i = 0; i < 100; i++) {
+            stars.push({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                radius: Math.random() * 1.5,
+                alpha: Math.random()
+            });
+        }
+    }
+
+    function drawStars() {
+        ctx.clearRect(0, 0, w, h);
+        for (let star of stars) {
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(0,255,255," + star.alpha + ")";
+            ctx.fill();
+        }
+    }
+
+    function animate() {
+        drawStars();
+        for (let star of stars) {
+            star.y += 0.5;
+            if (star.y > h) {
+                star.y = 0;
+                star.x = Math.random() * w;
+            }
+        }
+        requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', () => {
+        resize();
+        initStars();
+    });
+
+    resize();
+    initStars();
+    animate();
+    </script>
     """, unsafe_allow_html=True)
 
-# 💥 THE APP
 def main():
-    kaw_kaw_css()
+    load_kaw_kaw_css()
 
-    st.markdown("<h1>⚡ KAW KAW Gender Predictor ⚡</h1>", unsafe_allow_html=True)
-    st.write("🔥 Enter a name and witness the neon-powered AI magic.")
+    st.markdown('<div class="main-container"><div class="glass-card">', unsafe_allow_html=True)
+    st.markdown('<h1 class="glitch">⚡ Gender Predictor ⚡</h1>', unsafe_allow_html=True)
+    st.write("Type a name and unleash the prediction magic 💫")
 
-    input_name = st.text_input("🔤 Your Epic Name:", max_chars=30)
+    name_input = st.text_input("🔤 Enter your name:")
 
-    if st.button("🚀 Predict Now"):
-        if input_name.strip() != "":
-            features = extract_gender_features(input_name)
-            result = bayes.classify(features)
-            emoji = "👦" if result == "male" else "👧"
-            st.success(f'🔮 Predicted Gender for **"{input_name}"**: {emoji} **{result.upper()}**')
+    if st.button("🚀 PREDICT NOW"):
+        if name_input.strip() != "":
+            features = extract_gender_features(name_input)
+            gender = bayes.classify(features)
+            emoji = "👨" if gender == "male" else "👩"
+            st.success(f'🔮 Predicted Gender: {emoji} **{gender.upper()}**')
         else:
-            st.warning("⚠️ Input cannot be empty. Type something legendary.")
+            st.warning("⚠️ Please enter a name.")
+
+    st.markdown('</div></div>', unsafe_allow_html=True)
 
 if __name__ == '__main__':
     main()
